@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 // Joi Validation Schemas
 // These schemas define the structure and validation rules for listing and review data
 // Used in middleware to validate incoming request data before processing
@@ -23,7 +22,6 @@ module.exports.reviewSchema=Joi.object({
         rate:Joi.number().required().min(1).max(5),  // Rating from 1-5 stars (required)
         comment:Joi.string().required(),             // Review comment text (required)
     }).required()
-=======
 // Joi Validation Schemas
 // These schemas define the structure and validation rules for listing and review data
 // Used in middleware to validate incoming request data before processing
@@ -48,5 +46,4 @@ module.exports.reviewSchema=Joi.object({
         rate:Joi.number().required().min(1).max(5),  // Rating from 1-5 stars (required)
         comment:Joi.string().required(),             // Review comment text (required)
     }).required()
->>>>>>> b2ed93ae72bb0723fcec16dc8a187b212a2dda19
 });
