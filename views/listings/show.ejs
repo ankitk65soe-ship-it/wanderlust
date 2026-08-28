@@ -1,0 +1,89 @@
+<% layout("/layout/boilerplate")%>
+<script>
+    const maptoken="<%= process.env.MAP_TOKEN%>";
+    const listing= <%- JSON.stringify(place) %>;
+</script>
+<div class="row">
+    <div class="col-8 offset-3">
+        <h3><%=place.title%></h3>
+    </div>
+
+    <div class="card col-6 offset-3" width="18rem">
+        <img src="<%=place.image.url%>" class="card-img-top show-image" alt="listing">
+        <div class="card-body">
+            <p class="card-text">
+                <b><%=place.description%></b>
+                <br>
+                <b> &#8377; <%=place.price.toLocaleString("en-IN")%></b>
+                <br>
+                <b><%=place.location%></b>
+                <br>
+                <b><%=place.country%></b>
+            </p>
+        </div>
+        <br>
+        <div class="btns d-flex gap-4">
+            <a href="/listing/<%=place.id%>/edit" class="btn btn-danger">edit this listing</a>
+            <form method="post" action="/listing/<%=place._id%>?_method=DELETE" >
+                <button class="btn btn-dark">Delete</button>
+            </form>
+        </div>
+        
+    </div>
+    <div class="col-8 offset-3 mb-3">
+        <hr>
+        <h4>Leave a Review</h4>
+        <form action="/listing/<%= place.id %>/review" method="post" novalidate class="needs-validation">
+            <div class="mb-3 mt-3">
+                <label for="rating" class="form-control"></label>
+                <fieldset class="starability-slot">
+                    <legend>First rating:</legend>
+                    <input type="radio" id="no-rate" class="input-no-rate" name="review[rate]" value="1" checked aria-label="No rating." />
+                    <input type="radio" id="first-rate1" name="review[rate]" value="1" />
+                    <label for="first-rate1" title="Terrible">1 star</label>
+                    <input type="radio" id="first-rate2" name="review[rate]" value="2" />
+                    <label for="first-rate2" title="Not good">2 stars</label>
+                    <input type="radio" id="first-rate3" name="review[rate]" value="3" />
+                    <label for="first-rate3" title="Average">3 stars</label>
+                    <input type="radio" id="first-rate4" name="review[rate]" value="4" />
+                    <label for="first-rate4" title="Very good">4 stars</label>
+                    <input type="radio" id="first-rate5" name="review[rate]" value="5" />
+                    <label for="first-rate5" title="Amazing">5 stars</label>
+                </fieldset>
+            </div>
+            
+            <div>
+                <label for="comment" class="form-label"> comment</label>
+                <textarea name="review[comment]" id="comment" rows="5" cols="30" class="form-control" required></textarea>
+                <div class="invalid-feedback"> please submit the comment</div>
+            </div>
+            
+            <button class="btn btn-outline-dark">submit</button>
+        </form>
+        <hr>
+        <% if(place.review.length>0){ %>
+            <h4>All reviews</h4>
+                <div class="row">
+                    <% for(let reviews of place.review){ %>
+                        <div class="card listcard col-5  ms-3 mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">Ankit Kumar</h5>
+                                <p class="starability-result card-text" data-rating="<%= reviews.rate%>"> Rated:  stars </p>
+                                <p class="card-text"> <%= reviews.comment%> </p>
+                            </div>
+                            <form class="mb-3" method="post" action="/listing/<%= place.id %>/review/<%= reviews.id %>?_method=DELETE">
+                                <button class="btn btn-sm btn-dark">Delete</button>
+                            </form>
+                        </div>
+                    <%}%>
+                </div>
+        <%}%>
+    </div>
+
+    <div class="col-8 offset-3 mb-3">
+        <h3>Where you'll  be</h3>
+        <div id="map"></div>
+    </div>
+</div>
+
+<script src="/js/map.js"></script>
