@@ -1,6 +1,65 @@
-<<<<<<< HEAD
-// Middleware Functions
-=======
-// Middleware Functions
->>>>>>> b2ed93ae72bb0723fcec16dc8a187b212a2dda19
-// These functions perform checks and validations on requests before they reach the route handlers\n\nconst Listing = require(\"./models/listing\");\nconst Review = require(\"./models/review.js\");\nconst {listingSchema,reviewSchema} = require(\"./schema.js\"); \nconst Expresserror=require(\"./utils/Expresserror.js\");\n\n// Middleware: Check if user is logged in\n// Redirects unauthenticated users to login page and saves their intended URL\nmodule.exports.isLoggedIn=(req,res,next)=>{\n    if(!req.isAuthenticated()){\n        // Save the original URL to redirect user after successful login\n        req.session.redirectUrL=req.originalUrl;\n        req.flash(\"error\",\"you must be looged in to create listings\");\n        return res.redirect(\"/login\");\n    }\n    next();\n};\n\n// Middleware: Save and restore redirect URL from session\n// After login, redirects user back to the page they were trying to access\nmodule.exports.saveRedirectUrl=(req,res,next)=>{\n    if(req.session.redirectUrL){\n        // Make redirect URL available to the view\n        res.locals.redirectUrl = req.session.redirectUrl;\n    }\n    next();\n};\n\n// Middleware: Check if current user is the owner of a listing\n// Prevents unauthorized users from editing or deleting listings they don't own\nmodule.exports.isOwner = async(req,res,next)=>{\n    let {id}=req.params;\n    let listing = await Listing.findById(id);\n    // Compare listing owner ID with current user ID\n    if(!listing.owner._id.equals(res.locals.currUser._id)){\n        req.flash(\"error\",\"you are not the owner of the lsiting\");\n        return res.redirect(`/listing/${id}`);\n    }\n    next();\n};\n\n// Middleware: Validate listing data using Joi schema\n// Ensures all incoming listing data meets the required format and constraints\nmodule.exports.validateSchema = (req,res,next)=>{\n    // Validate request body against the listing schema\n    let {error}=listingSchema.validate(req.body,{ abortEarly: false });\n    if(error){\n        // Collect all validation error messages\n        const errMsg = error.details\n            .map((el) => el.message)\n            .join(\", \");\n        throw new ExpressError(400, errMsg);\n    }\n    next();\n}\n\n// Middleware: Validate review data using Joi schema\n// Ensures all incoming review data meets the required format and constraints\nmodule.exports.validateReview = (req,res,next)=>{\n    // Validate request body against the review schema\n    let {error} = reviewSchema.validate(req.body);\n    if(error){\n        // Collect all validation error messages\n        let errMsg = error.details.map((el)=>el.message).join(\",\");\n        throw new ExpressError(400,errMsg);\n    }else{\n        next();\n    }\n};\n\n// Middleware: Check if current user is the author of a review\n// Prevents unauthorized users from deleting reviews they didn't write\nmodule.exports.isReviewAuthor=async(req,res,next)=>{\n    let {id,reviewId}=req.params;\n\n    let review=await Review.findById(reviewId);\n    // Compare review author ID with current user ID\n    if(!review.author.equals(res.locals.currUser._id)){\n        req.flash(\"error\",\"you are not the owner of this review\");\n        return res.redirect(`/listing/${id}`);\n    }\n    next();\n};
+const Listing = require("./models/listing");
+const Review = require("./models/review.js");
+const {listingSchema,reviewSchema} = require("./schema.js"); 
+const Expresserror=require("./utils/Expresserror.js");
+
+module.exports.isLoggedIn=(req,res,next)=>{
+    if(!req.isAuthenticated()){
+        req.session.redirectUrL=req.originalUrl;
+        req.flash("error","you must be looged in to create listings");
+        return res.redirect("/login");
+    }
+    next();
+};
+
+module.exports.saveRedirectUrl=(req,res,next)=>{
+    if(req.session.redirectUrL){
+        res.locals.redirectUrl = req.session.redirectUrl;
+    }
+    next();
+};
+
+module.exports.isOwner = async(req,res,next)=>{
+    let {id}=req.params;
+    let listing = await Listing.findById(id);
+    if(!listing.owner._id.equals(res.locals.currUser._id)){
+        req.flash("error","you are not the owner of the lsiting");
+        return res.redirect(`/listing/${id}`);
+    }
+    next();
+};
+
+
+module.exports.validateSchema = (req,res,next)=>{
+    let {error}=listingSchema.validate(req.body,{ abortEarly: false });
+    if(error){
+        const errMsg = error.details
+            .map((el) => el.message)
+            .join(", ");
+        throw new ExpressError(400, errMsg);
+    }
+    next();
+}
+
+
+module.exports.validateReview = (req,res,next)=>{
+    let {error} = reviewSchema.validate(req.body);
+    if(error){
+        let errMsg = error.details.map((el)=>el.message).join(",");
+        throw new ExpressError(400,errMsg);
+    }else{
+        next();
+    }
+};
+
+
+module.exports.isReviewAuthor=async(req,res,next)=>{
+    let {id,reviewId}=req.params;
+
+    let review=await Review.findById(reviewId);
+    if(!review.author.equals(res.locals.currUser._id)){
+        req.flash("error","you are not the owner of this review");
+        return res.redirect(`/listing/${id}`);
+    }
+    next();
+};
